@@ -435,41 +435,117 @@ class VdjRenderer {
     div.style.backgroundColor = '#161718';
     div.style.border = '1px solid #2a2a2a';
     div.style.borderRadius = '3px';
+    div.style.overflow = 'hidden';
 
-    // Fake folder list
+    // Folder tree (left sidebar)
     const folderList = document.createElement('div');
-    folderList.style.cssText = `
-      position: absolute; left: 0; top: 0; width: 25%; height: 100%;
-      border-right: 1px solid #2a2a2a; padding: 8px;
-      overflow: hidden;
-    `;
-    const folders = ['Desktop', 'Documents', 'Music', 'Playlists', 'Sampler', 'History'];
-    folders.forEach((f, i) => {
+    folderList.style.cssText =
+      'position:absolute;left:0;top:0;width:22%;height:100%;border-right:1px solid #2a2a2a;padding:6px 4px;overflow:hidden;font-family:Arial,sans-serif;';
+    const folders = [
+      { name: 'Desktop', indent: 0, icon: '💻' },
+      { name: 'Music', indent: 1, icon: '🎵' },
+      { name: 'Playlists', indent: 1, icon: '📋', active: true },
+      { name: '  House Mix', indent: 2, icon: '' },
+      { name: '  Hip Hop Set', indent: 2, icon: '' },
+      { name: '  Throwback', indent: 2, icon: '' },
+      { name: 'Sampler', indent: 1, icon: '🔊' },
+      { name: 'History', indent: 1, icon: '🕐' },
+      { name: 'Online Music', indent: 1, icon: '🌐' },
+    ];
+    folders.forEach((f) => {
       const item = document.createElement('div');
-      item.style.cssText = `
-        color: ${i === 2 ? '#fff' : '#777'}; font-size: 11px;
-        padding: 2px 4px; background: ${i === 2 ? '#343536' : 'transparent'};
-        border-radius: 2px; margin-bottom: 1px;
-      `;
-      item.textContent = f;
+      item.style.cssText = [
+        'color:' + (f.active ? '#fff' : '#888') + ';',
+        'font-size:11px;',
+        'padding:3px 4px 3px ' + (6 + f.indent * 12) + 'px;',
+        'background:' + (f.active ? '#343536' : 'transparent') + ';',
+        'border-radius:2px;',
+        'margin-bottom:1px;',
+        'white-space:nowrap;',
+        'overflow:hidden;',
+        'text-overflow:ellipsis;',
+      ].join('');
+      item.textContent = (f.icon ? f.icon + ' ' : '') + f.name;
       folderList.appendChild(item);
     });
     div.appendChild(folderList);
 
-    // Fake file list
+    // File list (center)
     const fileList = document.createElement('div');
-    fileList.style.cssText = 'position: absolute; left: 25%; top: 0; width: 50%; height: 100%;';
-    const files = ['Track 01.mp3', 'Track 02.mp3', 'Remix Edit.wav', 'DJ Set Intro.mp3'];
-    files.forEach((f, i) => {
-      const item = document.createElement('div');
-      item.style.cssText = `
-        color: ${i === 1 ? '#fff' : '#aaa'}; font-size: 11px;
-        padding: 2px 6px; background: ${i === 1 ? '#252525' : i % 2 === 0 ? '#1e1e1e' : 'transparent'};
-      `;
-      item.textContent = f;
-      fileList.appendChild(item);
+    fileList.style.cssText =
+      'position:absolute;left:22%;top:0;width:52%;height:100%;border-right:1px solid #2a2a2a;overflow:hidden;';
+    const tracks = [
+      { title: 'Summer Vibes', artist: 'DJ Sunshine', bpm: '128', key: '4A', time: '4:32', playing: true },
+      { title: 'Bass Drop Anthem', artist: 'Club Kingz', bpm: '140', key: '7A', time: '3:58' },
+      { title: 'Midnight Groove', artist: 'Luna Beats', bpm: '124', key: '2A', time: '5:11' },
+      { title: 'Electro Storm', artist: 'Volt Rush', bpm: '132', key: '9A', time: '3:45' },
+      { title: 'Funky Disco House', artist: 'RetroFlow', bpm: '126', key: '5A', time: '6:02' },
+      { title: 'Deep Techno', artist: 'SubZero Wave', bpm: '135', key: '1A', time: '4:19' },
+      { title: 'Latin Heat', artist: 'Ritmo Fuego', bpm: '118', key: '11B', time: '3:52' },
+    ];
+    const cols = [
+      { w: '6%', label: '#' },
+      { w: '40%', label: 'Title' },
+      { w: '26%', label: 'Artist' },
+      { w: '10%', label: 'BPM' },
+      { w: '8%', label: 'Key' },
+      { w: '10%', label: 'Time' },
+    ];
+    // Header
+    const header = document.createElement('div');
+    header.style.cssText = 'display:flex;padding:4px 6px;border-bottom:1px solid #333;background:#1e1e1f;font-size:10px;color:#888;font-weight:bold;';
+    cols.forEach(c => {
+      const h = document.createElement('span');
+      h.style.cssText = 'width:' + c.w + ';';
+      h.textContent = c.label;
+      header.appendChild(h);
+    });
+    fileList.appendChild(header);
+    // Tracks
+    tracks.forEach((t, i) => {
+      const row = document.createElement('div');
+      row.style.cssText = [
+        'display:flex;',
+        'padding:3px 6px;',
+        'font-size:11px;',
+        'color:' + (t.playing ? '#fff' : '#bbb') + ';',
+        'background:' + (t.playing ? '#252525' : (i % 2 === 0 ? '#1e1e1f' : 'transparent')) + ';',
+        'border-bottom:1px solid #1a1a1a;',
+      ].join('');
+      [
+        '' + (i + 1),
+        t.title,
+        t.artist,
+        t.bpm,
+        t.key,
+        t.time,
+      ].forEach((val, j) => {
+        const cell = document.createElement('span');
+        cell.style.cssText = 'width:' + cols[j].w + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+        cell.textContent = val;
+        row.appendChild(cell);
+      });
+      fileList.appendChild(row);
     });
     div.appendChild(fileList);
+
+    // Sideview (right)
+    const sideview = document.createElement('div');
+    sideview.style.cssText =
+      'position:absolute;right:0;top:0;width:26%;height:100%;padding:6px;overflow:hidden;font-family:Arial,sans-serif;';
+    sideview.innerHTML = [
+      '<div style="color:#888;font-size:10px;font-weight:bold;margin-bottom:6px;">▶ NOW PLAYING</div>',
+      '<div style="color:#fff;font-size:12px;font-weight:bold;">Summer Vibes</div>',
+      '<div style="color:#aaa;font-size:11px;">DJ Sunshine</div>',
+      '<div style="color:#666;font-size:10px;margin-top:8px;">BPM: 128 | Key: 4A</div>',
+      '<div style="color:#666;font-size:10px;">Time: 4:32</div>',
+      '<hr style="border-color:#333;margin:8px 0;">',
+      '<div style="color:#888;font-size:10px;font-weight:bold;">🎚 SAMPLER</div>',
+      '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-top:4px;">',
+      ...[...Array(8)].map(() => '<div style="background:#252525;border-radius:2px;aspect-ratio:1;"></div>').join(''),
+      '</div>',
+    ].join('');
+    div.appendChild(sideview);
 
     return div;
   }

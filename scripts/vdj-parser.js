@@ -111,27 +111,28 @@ class VdjParser {
    * Collect all define elements (class defines and color defines)
    */
   _collectDefines(skinEl) {
-    for (const child of skinEl.children) {
-      if (child.tagName !== 'define') continue;
-
-      const className = child.getAttribute('class');
-      const colorName = child.getAttribute('color');
-
-      if (colorName) {
-        // Color define
-        this.colorDefines[colorName.toLowerCase()] = {
-          value: child.getAttribute('value') || '',
-          deck: child.getAttribute('deck') || '',
-        };
-      } else if (className) {
-        // Class define
-        this.classDefines[className] = {
-          element: child,
-          classdeck: child.getAttribute('classdeck') || '',
-          placeholders: this._parsePlaceholders(child.getAttribute('placeholders') || ''),
-        };
+    const walk = (el) => {
+      for (const child of el.children || []) {
+        if (child.tagName === 'define') {
+          const className = child.getAttribute('class');
+          const colorName = child.getAttribute('color');
+          if (colorName) {
+            this.colorDefines[colorName.toLowerCase()] = {
+              value: child.getAttribute('value') || '',
+              deck: child.getAttribute('deck') || '',
+            };
+          } else if (className) {
+            this.classDefines[className] = {
+              element: child,
+              classdeck: child.getAttribute('classdeck') || '',
+              placeholders: this._parsePlaceholders(child.getAttribute('placeholders') || ''),
+            };
+          }
+        }
+        walk(child);
       }
-    }
+    };
+    walk(skinEl);
   }
 
   /**
@@ -205,10 +206,9 @@ class VdjParser {
       return parseFloat(expr);
     }
 
-    // Handle relative positions (+ or - prefix)
-    let relativeX = 0, relativeY = 0;
+    // Leading operator fix: "+10" becomes "0+10"
     if (expr.startsWith('+') || expr.startsWith('-')) {
-      // Will be resolved by caller with parent position
+      expr = '0' + expr;
     }
 
     // Evaluate left-to-right math
@@ -220,7 +220,7 @@ class VdjParser {
     for (let i = 1; i < tokens.length; i += 2) {
       const op = tokens[i];
       const num = parseFloat(tokens[i + 1]);
-      if (isNaN(num)) break;
+        if (isNaN(num)) continue;
       switch (op) {
         case '+': result += num; break;
         case '-': result -= num; break;
@@ -307,29 +307,53 @@ class VdjParser {
   _resolveClass(el) {
     const className = el.getAttribute('class');
     if (!className || !this.classDefines[className]) return el;
-
     const classDef = this.classDefines[className];
-    const placeholders = classDef.placeholders;
+    const defEl = classDef.element;
+    const ctx = { ...classDef.placeholders };
+    for (const a of el.attributes) ctx[a.name.toUpperCase()] = a.value;
 
-    // Build placeholder values from element attributes
-    const ctx = { ...placeholders };
-    for (const attr of el.attributes) {
-      ctx[attr.name.toUpperCase()] = attr.value;
+    const resolvePH = (node) => {
+      for (const a of node.attributes || []) {
+        if (a.value && typeof a.value === 'string')
+          a.value = a.value.replace(/\[([A-Z_]+)\]/gi, (_, k) => ctx[k.toUpperCase()] !== undefined ? String(ctx[k.toUpperCase()]) : k);
+      }
+      for (const c of node.childNodes || []) {
+        if (c.nodeType === 1) resolvePH(c);
+      }
+    };
+
+    // Container elements (panel, group, deck): prepend define children
+    const containers = new Set(['panel', 'group', 'deck']);
+    if (containers.has(el.tagName)) {
+      const merged = el.cloneNode(true);
+      const kids = Array.from(defEl.childNodes || []).filter(n => n.nodeType === 1).reverse();
+      for (const dc of kids) {
+        const cloned = dc.cloneNode(true); resolvePH(cloned);
+        merged.insertBefore(cloned, merged.firstChild);
+      }
+      return merged;
     }
 
-    // Clone the define element
-    const merged = classDef.element.cloneNode(true);
-
-    // Merge attributes from the actual element (width, action, etc.)
-    for (const attr of el.attributes) {
-      if (attr.name !== 'class') {
-        merged.setAttribute(attr.name, attr.value);
+    // Leaf elements: merge define children (caller wins)
+    const merged = el.cloneNode(true);
+    for (const dc of Array.from(defEl.childNodes || [])) {
+      if (dc.nodeType !== 1) continue;
+      let exists = null;
+      for (const mc of merged.childNodes || []) {
+        if (mc.nodeType === 1 && mc.tagName === dc.tagName) { exists = mc; break; }
+      }
+      const cloned = dc.cloneNode(true); resolvePH(cloned);
+      if (exists) {
+        for (const a of cloned.attributes || []) {
+          if (!exists.getAttribute(a.name)) exists.setAttribute(a.name, a.value);
+        }
+      } else {
+        merged.insertBefore(cloned, merged.firstChild);
       }
     }
-
-    // Resolve placeholders in text content and attributes
-    this._resolvePlaceholdersInElement(merged, ctx);
-
+    for (const a of el.attributes) {
+      if (a.name !== 'class') merged.setAttribute(a.name, a.value);
+    }
     return merged;
   }
 
@@ -355,7 +379,7 @@ class VdjParser {
    * Render a single element and its subtree into flat render nodes
    */
   _renderElement(el, parentCtx) {
-    const tag = el.tagName ? el.tagName.toLowerCase() : '';
+    let tag = el.tagName ? el.tagName.toLowerCase() : '';
 
     // Resolve class if present
     if (el.getAttribute('class')) {
