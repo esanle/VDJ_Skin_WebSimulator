@@ -1,62 +1,77 @@
-# VDJ SKIN WYSIWYG PREVIEW EDITOR
+# VDJ SKIN WYSIWYG PREVIEW SIMULATOR
 
 <p align="center">
-    <img src="https://github.com/LLPPR/VDJ_Skin_WebSimulator/blob/main/images/VISUALdj.png" alt="Visual DJ" width="250" height="250">
+    <img src="images/VISUALdj.png" alt="Visual DJ" width="250" height="250">
 </p>
 
 ## Description
-This project provides a browser-based visual simulator for designing Virtual DJ skins. In the spirit of old 'What You See Is What You Get' web editors, users are able to preview real time edits to the skin's XML file. The simulator leverages HTML, XSL and JavaScript to simulate the skin layout and styles defined in the XML file.
-
-## Rationale
-The purpose of this project is to provide an intuitive and visual way for users to design and customize Virtual DJ interfaces using an operational POV. Using a simple method to preview design changes, this tool aims to enhance the efficiency of customizing interfaces.
+A browser-based visual simulator for Virtual DJ skin design. Parses real VDJ Skin SDK XML files and renders them as HTML/CSS, giving WYSIWYG previews of skin layouts. Powered by a custom VDJ XML parser that resolves skin defines, placeholders, colors, and coordinate math expressions.
 
 ## Directory Structure
 ```
 VDJ_Skin_WebSimulator/
-├── skins/
-│   ├── skin.xml
-│   ├── skin.xsl
+├── server.js              ← Node.js HTTP server (listens on 127.0.0.1:3000)
+├── package.json
+├── index.html             ← Main entry point with skin selector
 ├── scripts/
-│   ├── main.js
+│   ├── vdj-parser.js      ← VDJ Skin XML parser (defines, placeholders, colors, math)
+│   └── vdj-renderer.js    ← DOM renderer (converts parsed skin to HTML/CSS)
+├── skins/Default/         ← VirtualDJ Default skin (5 layouts)
+│   ├── Pro.xml (960 elements)
+│   ├── Essentials.xml (235 elements)
+│   ├── Performance.xml
+│   ├── Starter.xml
+│   ├── Vertical.xml
+│   └── *.png (graphics)
 ├── styles/
-│   ├── style.css
-├── images/
-│   ├──VISUALdj.png
-├── index.html
-└── README.md
+│   └── style.css
+└── images/
 ```
 
-## Usage
-1. **Open `index.html` in a Web Browser:** 
-   - This file serves as the main entry point for the simulator. Opening it in a web browser will allow you to see the current state of the skin design.
-2. **Edit the XML File in the `skins` Directory:**
-   - Modify `skin.xml` to change the elements and their properties. This file defines the structure and components of the skin.
-3. **Refresh the Browser to See Changes:**
-   - After making changes to `skin.xml`, refresh the browser to see the updates in real-time.
+## Quick Start
+```bash
+npm start
+# → http://127.0.0.1:3000
+```
 
-## Customization
-- **Modify `index.html`:**
-  - Change the structure and elements of the skin directly in this file if needed.
-- **Edit `styles/style.css`:**
-  - Update the base styles and appearance of the simulator by editing this CSS file.
-- **Add or Replace Images:**
-  - Add or replace images in the `skins` directory as needed for your skin design.
-- **Update `scripts/main.js`:**
-  - Handle more complex parsing and styling logic based on the XML file by modifying this JavaScript file.
+Or with auto-reload:
+```bash
+npm run dev
+```
 
-## Change Log
-- **2025-02-24:** Initial setup and organization of the repository. Created `skin.xml`, `skin.xsl`, and updated `index.html` to integrate XSLT for real-time previews.
-- **2025-02-24:** Structured the repository into `skins`, `scripts`, and `styles` directories for better organization and maintainability.
-- **2025-02-24:** Updated README documentation to reflect the new structure and usage instructions.
+## Supported Skin Features
 
-## Additional Documentation
-- **Commit History:** View detailed commit history [here](https://github.com/LLPPR/VDJ_Skin_WebSimulator/commits).
+| Feature | Status |
+|---------|--------|
+| Vector buttons (shape/color/gradient/radius) | ✅ |
+| Image-based buttons (sprite coordinates) | ✅ |
+| Text overlays (format, action labels) | ✅ |
+| Visual elements (static & colored) | ✅ |
+| Sliders & faders | ✅ |
+| Line/Square/Circle shapes | ✅ |
+| Song position (waveform placeholder) | ✅ |
+| Browser (folder/file list placeholder) | ✅ |
+| Video preview (placeholder) | ✅ |
+| Album cover (placeholder) | ✅ |
+| Logo | ✅ |
+| Group/Panel/Deck containers | ✅ |
+| Class defines with placeholders | ✅ |
+| Color defines | ✅ |
+| Relative positioning & math | ✅ |
+| VDJ Script execution | ❌ (static rendering only) |
+| Icon/image sprites from skin PNG | ⚠️ (coordinates parsed, image rendering partial) |
+| Animations & state changes | ⚠️ (static state only) |
 
-For any questions or further assistance, please feel free to open an issue on the repository.
+## How It Works
 
----
+1. **Parser** (`vdj-parser.js`): Reads VDJ Skin XML, resolves `<define>` classes, color defines, placeholder variables, coordinate math expressions, and nested container positions.
+2. **Renderer** (`vdj-renderer.js`): Converts parsed elements into absolutely-positioned DOM elements with CSS styling.
+3. **Scale & Pan**: Toolbar slider scales the 1920×1080 skin to fit any viewport.
+
+## Adding Your Own Skin
+Place your `.xml` and `.png` files in a subdirectory under `skins/`, then add entries to the `SKINS` array in `index.html`.
 
 ## Disclaimer
-This project is not affiliated with, sponsored by, or endorsed by Virtual DJ. It is a contribution to the open source community, created by an old school graphic designer, new school functional analyst and lifelong DJ. This project aims to capture the ease of use of the old WYSIWYG web design software to motivatte more users to contribute to the customization and usability of Virtual DJ.
+This project is not affiliated with, sponsored by, or endorsed by Virtual DJ / Atomix Productions. It is a community contribution for skin designers.
 
 ---

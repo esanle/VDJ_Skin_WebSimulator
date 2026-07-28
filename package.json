@@ -7,6 +7,14 @@
     "start": "node server.js",
     "dev": "node --watch server.js"
   },
-  "keywords": ["virtual-dj", "skin", "wysiwyg", "editor"],
-  "license": "MIT"
+  "keywords": [
+    "virtual-dj",
+    "skin",
+    "wysiwyg",
+    "editor"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@xmldom/xmldom": "^0.9.10"
+  }
 }

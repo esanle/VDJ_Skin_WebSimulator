@@ -3,11 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Virtual DJ Skin Simulator</title>
+    <title>VDJ Skin Simulator</title>
     <link rel="stylesheet" href="styles/style.css">
 </head>
 <body>
-    <div id="skin-container"></div>
-    <script src="scripts/main.js"></script>
+    <div class="toolbar">
+        <span class="toolbar-brand">🎛️ VDJ Skin Simulator</span>
+        <select id="skin-select" class="skin-select">
+            <option value="">Loading skins...</option>
+        </select>
+        <label class="scale-label">
+            Scale: <input type="range" id="scale-slider" min="20" max="100" value="50" step="5"> <span id="scale-value">50%</span>
+        </label>
+        <span id="element-count" class="element-count"></span>
+    </div>
+    <div class="skin-wrapper">
+        <div id="skin-container"></div>
+    </div>
+
+    <script src="scripts/vdj-parser.js"></script>
+    <script src="scripts/vdj-renderer.js"></script>
+    <script>
+    (function() {
+        const container = document.getElementById('skin-container');
+        const skinSelect = document.getElementById('skin-select');
+        const scaleSlider = document.getElementById('scale-slider');
+        const scaleValue = document.getElementById('scale-value');
+        const elementCount = document.getElementById('element-count');
+
+        const SKINS = [
+            { name: 'VirtualDJ Pro', xml: 'skins/Default/Pro.xml', image: 'skins/Default/gfx-pro.png' },
+            { name: 'VirtualDJ Essentials', xml: 'skins/Default/Essentials.xml', image: 'skins/Default/gfx-basic.png' },
+            { name: 'VirtualDJ Performance', xml: 'skins/Default/Performance.xml', image: 'skins/Default/gfx-pro.png' },
+            { name: 'VirtualDJ Starter', xml: 'skins/Default/Starter.xml', image: 'skins/Default/gfx-basic.png' },
+            { name: 'VirtualDJ Vertical', xml: 'skins/Default/Vertical.xml', image: 'skins/Default/gfx-pro.png' },
+        ];
+
+        let currentSkin = null;
+        let parser = new VdjParser();
+        let renderer = null;
+
+        // Populate skin selector
+        skinSelect.innerHTML = SKINS.map((s, i) => `<option value="${i}">${s.name}</option>`).join('');
+
+        async function loadSkin(index) {
+            const skinDef = SKINS[index];
+            skinSelect.value = index;
+            elementCount.textContent = 'Loading...';
+
+            try {
+                const [xmlRes, _imgRes] = await Promise.all([
+                    fetch(skinDef.xml),
+                    fetch(skinDef.image) // preload image
+                ]);
+
+                if (!xmlRes.ok) throw new Error(`Failed to load ${skinDef.xml}: ${xmlRes.status}`);
+                const xmlText = await xmlRes.text();
+
+                // Parse
+                const startTime = performance.now();
+                const skin = parser.parse(xmlText);
+                const parseTime = (performance.now() - startTime).toFixed(1);
+
+                // Render
+                const renderStart = performance.now();
+                const scale = parseInt(scaleSlider.value) / 100;
+                renderer = new VdjRenderer(container, {
+                    imagePath: skinDef.image,
+                    scale: scale,
+                    skinWidth: skin.meta.width,
+                    skinHeight: skin.meta.height,
+                });
+                renderer.render(skin);
+                const renderTime = (performance.now() - renderStart).toFixed(1);
+
+                elementCount.textContent = `${skin.elements.length} elements · Parse ${parseTime}ms · Render ${renderTime}ms · ${skinDef.name}`;
+                currentSkin = skin;
+
+                // Auto-scale to fit viewport
+                autoScale();
+
+                console.log(`Skin: ${skin.meta.name}`, skin.meta);
+                console.log(`Elements: ${skin.elements.length}`, skin.elements.slice(0, 5));
+            } catch (err) {
+                container.innerHTML = `<div class="error">Error: ${err.message}</div>`;
+                elementCount.textContent = 'Error';
+                console.error(err);
+            }
+        }
+
+        function autoScale() {
+            const wrapper = document.querySelector('.skin-wrapper');
+            const maxWidth = wrapper.clientWidth - 40;
+            const maxHeight = window.innerHeight - 100;
+
+            if (currentSkin) {
+                const fitScale = Math.min(
+                    maxWidth / currentSkin.meta.width,
+                    maxHeight / currentSkin.meta.height,
+                    1.0
+                );
+                scaleSlider.value = Math.floor(fitScale * 100);
+                scaleValue.textContent = scaleSlider.value + '%';
+                updateScale();
+            }
+        }
+
+        function updateScale() {
+            const scale = parseInt(scaleSlider.value) / 100;
+            scaleValue.textContent = scaleSlider.value + '%';
+
+            const wrapper = container.querySelector('.vdj-skin');
+            if (wrapper) {
+                wrapper.style.transform = `scale(${scale})`;
+                wrapper.style.width = `${currentSkin.meta.width * scale}px`;
+                wrapper.style.height = `${currentSkin.meta.height * scale}px`;
+            }
+        }
+
+        // Event handlers
+        skinSelect.addEventListener('change', () => loadSkin(parseInt(skinSelect.value)));
+        scaleSlider.addEventListener('input', updateScale);
+        window.addEventListener('resize', () => {
+            if (currentSkin) autoScale();
+        });
+
+        // Initial load
+        loadSkin(0);
+    })();
+    </script>
 </body>
 </html>

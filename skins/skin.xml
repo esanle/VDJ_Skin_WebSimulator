@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<skin>
-    <element id="button1" x="10" y="20" width="100" height="50"/>
-    <element id="button2" x="120" y="20" width="100" height="50"/>
-</skin>
