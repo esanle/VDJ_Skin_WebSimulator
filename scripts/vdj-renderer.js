@@ -221,6 +221,12 @@ class VdjRenderer {
 
     let content = textDef.text || textDef.content || '';
     if (textDef.format && !textDef.text) {
+      if (textDef.format === "--:--") content = "3:45";
+      else if (textDef.format === "%title" || textDef.format === "title") content = "Song Title";
+      else if (textDef.format === "%author" || textDef.format === "%artist" || textDef.format === "artist") content = "Artist";
+      else if (textDef.format === "%bpm") content = "128";
+      else if (textDef.format === "%key") content = "4A";
+      else 
       content = textDef.format
         .replace(/%title/g, 'Title')
         .replace(/%author/g, 'Artist')
