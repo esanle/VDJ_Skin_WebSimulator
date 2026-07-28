@@ -224,8 +224,18 @@ class VdjRenderer {
       if (textDef.format === "--:--") content = "3:45";
       else if (textDef.format === "%title" || textDef.format === "title") content = "Song Title";
       else if (textDef.format === "%author" || textDef.format === "%artist" || textDef.format === "artist") content = "Artist";
-      else if (textDef.format === "%bpm") content = "128";
+      else if (textDef.format === "%bpm" || textDef.format === "%Pbpmex" || textDef.format === "%bpmex") content = "128";
       else if (textDef.format === "%key") content = "4A";
+      else if (textDef.format === "%time" || textDef.format === "%spent" || textDef.format === "%left") content = "3:45";
+      else if (textDef.format === "%pitch") content = "+0.0%";
+      else if (textDef.format === "%loop") content = "8";
+      else if (textDef.format === "%name") content = "Track Name";
+      else if (textDef.format === "%comment") content = "Great track";
+      else if (textDef.format === "%level") content = "-6.0";
+      else if (textDef.format === "%status") content = "PLAYING";
+      else if (textDef.format === "%counter") content = "42";
+      else if (textDef.format === "%cpu") content = "12%";
+      else if (textDef.format === "%hour" || textDef.format === "%fullhour") content = new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
       else 
       content = textDef.format
         .replace(/%title/g, 'Title')
