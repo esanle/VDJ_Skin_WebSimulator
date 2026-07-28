@@ -320,10 +320,27 @@ class VdjParser {
     const ctx = { ...classDef.placeholders };
     for (const a of el.attributes) ctx[a.name.toUpperCase()] = a.value;
 
+    // Also add *-stripped versions for bare token matching (e.g., "*WIDTH" -> also "WIDTH")
+    for (const k of Object.keys(ctx)) {
+      if (k.startsWith('*') && ctx[k] !== undefined) {
+        const stripped = k.slice(1);
+        if (ctx[stripped] === undefined) ctx[stripped] = ctx[k];
+      }
+    }
+
     const resolvePH = (node) => {
       for (const a of node.attributes || []) {
-        if (a.value && typeof a.value === 'string')
-          a.value = a.value.replace(/\[([A-Z_]+)\]/gi, (_, k) => ctx[k.toUpperCase()] !== undefined ? String(ctx[k.toUpperCase()]) : k);
+        if (a.value && typeof a.value === 'string') {
+          // Replace bracket-wrapped [PLACEHOLDER]
+          a.value = a.value.replace(/\[([A-Z_]+)\]/gi, (_, k) =>
+            ctx[k.toUpperCase()] !== undefined ? String(ctx[k.toUpperCase()]) : k
+          );
+          // Replace bare uppercase tokens matching known placeholder keys
+          a.value = a.value.replace(/\b([A-Z_]{2,})\b/g, (m, k) => {
+            const v = ctx[k.toUpperCase()];
+            return v !== undefined ? String(v) : m;
+          });
+        }
       }
       for (const c of node.childNodes || []) {
         if (c.nodeType === 1) resolvePH(c);
