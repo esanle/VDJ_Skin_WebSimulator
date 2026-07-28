@@ -1,0 +1,12 @@
+{
+  "name": "vdj-skin-websimulator",
+  "version": "1.0.0",
+  "description": "Browser-based visual simulator for designing Virtual DJ skins with real-time XML editing preview",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": ["virtual-dj", "skin", "wysiwyg", "editor"],
+  "license": "MIT"
+}
