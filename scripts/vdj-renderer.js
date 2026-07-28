@@ -256,7 +256,7 @@ class VdjRenderer {
       justify-content: ${textDef.align === 'right' ? 'flex-end' : textDef.align === 'center' ? 'center' : 'flex-start'};
       font-size: ${textDef.fontSize}px;
       font-weight: ${textDef.weight};
-      color: ${textDef.color || '#FFFFFF'};
+      color: ${textDef.color && textDef.color !== 'black' && textDef.color !== '#000000' ? textDef.color : '#CCCCCC'};
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
@@ -265,6 +265,8 @@ class VdjRenderer {
       line-height: 1.2;
       ${textDef.multiline === 'yes' ? 'white-space: normal; word-wrap: break-word;' : ''}
     `;
+    // Mock common VDJ actions
+    if (textDef.action === "get_clock") content = new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
     span.textContent = content;
     return span;
   }
