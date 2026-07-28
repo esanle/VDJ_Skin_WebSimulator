@@ -474,9 +474,41 @@ class VdjParser {
     const ctx = { x: pos.x, y: pos.y };
 
     const children = [];
+
+    // Render panel background from <off>/<up>/<on>/<down> children
+    for (const bgTag of ['off', 'up', 'on', 'down']) {
+      const bgEl = this._getChild(el, bgTag);
+      if (bgEl) {
+        const bgState = {
+          x: this.evalMath(bgEl.getAttribute('x') || '0'),
+          y: this.evalMath(bgEl.getAttribute('y') || '0'),
+          width: this.evalMath(bgEl.getAttribute('width') || String(pos.width || 0)),
+          height: this.evalMath(bgEl.getAttribute('height') || String(pos.height || 0)),
+          color: this.resolveColor(bgEl.getAttribute('color') || ''),
+          shape: bgEl.getAttribute('shape') || '',
+          border: this.evalMath(bgEl.getAttribute('border') || bgEl.getAttribute('border_size') || '0'),
+          borderColor: this.resolveColor(bgEl.getAttribute('border_color') || bgEl.getAttribute('border') || ''),
+          radius: this.evalMath(bgEl.getAttribute('radius') || '0'),
+          condition: bgEl.getAttribute('condition') || '',
+        };
+        // If it has color or shape, render as a background visual
+        if (bgState.color || bgState.shape) {
+          children.push({
+            type: 'visual',
+            x: pos.x, y: pos.y,
+            width: pos.width || 1920,
+            height: pos.height || 1080,
+            source: '', visualType: '',
+            states: { off: bgState },
+          });
+        }
+      }
+    }
+
     for (const child of el.children) {
       if (child.tagName === 'pos' || child.tagName === 'size' ||
           child.tagName === 'up' || child.tagName === 'down' ||
+          child.tagName === 'off' || child.tagName === 'on' ||
           child.tagName === 'clipmask') continue;
       const rendered = this._renderElement(child, ctx);
       if (Array.isArray(rendered)) {
