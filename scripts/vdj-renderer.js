@@ -238,7 +238,42 @@ class VdjRenderer {
         .replace(/%name/g, '');
     }
     if (textDef.action && !textDef.text) {
-      content = textDef.action.replace(/get_/g, '').replace(/_/g, ' ');
+      // Mock common VDJ actions
+      if (textDef.action === "get_clock") content = new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+      else if (textDef.action === "get_time") content = "3:45";
+      else if (textDef.action === "get_title") content = "Summer Vibes";
+      else if (textDef.action === "get_author") content = "DJ Artist";
+      else if (textDef.action === "get_bpm" || textDef.action === "bpm_label") content = "128";
+      else if (textDef.action === "get_key") content = "4A";
+      else if (textDef.action === "get_loop") content = "8";
+      else if (textDef.action === "get_pitch") content = "+0.0%";
+      else if (textDef.action === "high_label") content = "HI";
+      else if (textDef.action === "mid_label") content = "MID";
+      else if (textDef.action === "low_label") content = "LOW";
+      else if (textDef.action === "filter_label") content = "FLT";
+      else if (textDef.action === "gain_label") content = "GN";
+      else if (textDef.action === "get_username & param_uppercase") content = "USER";
+      else if (textDef.action === "get_username") content = "DJ";
+      else if (textDef.action === "get_playlist") content = "Current Playlist";
+      else if (textDef.action === "get_playlist_info") content = "42 tracks, 3:24:15";
+      else if (textDef.action === "get_effect_name" || textDef.action === "effect_mixfx & param_uppercase") content = "EFFECT";
+      else if (textDef.action === "get_videofx_name") content = "FX";
+      else if (textDef.action === "get_videotrans_name") content = "XFADE";
+      else if (textDef.action === "get_text '%videosource'") content = "SOURCE";
+      else if (textDef.action === "get_song_title") content = "Summer Vibes";
+      else if (textDef.action === "get_song_author") content = "DJ Artist";
+      else if (textDef.action === "get_song_bpm") content = "128";
+      else if (textDef.action === "get_song_key") content = "4A";
+      else if (textDef.action === "get_song_artist") content = "DJ Artist";
+      else if (textDef.action === "get_folder_name") content = "Music";
+      else if (textDef.action === "get_file_name") content = "Track 01.mp3";
+      else if (textDef.action === "get_file_size") content = "8.4 MB";
+      else if (textDef.action === "get_file_length") content = "4:32";
+      else if (textDef.action === "get_rating") content = "★★★★";
+      else if (textDef.action === "get_comment") content = "Great track";
+      else if (textDef.action === "get_genre") content = "House";
+      else if (textDef.action === "get_year") content = "2024";
+      else content = textDef.action.replace(/get_/g, '').replace(/_/g, ' ');
     }
 
     // Floor text: if it matches a common action pattern, show a label
