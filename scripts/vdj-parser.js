@@ -489,8 +489,9 @@ class VdjParser {
   }
 
   _renderContainer(el, parentCtx) {
+    // Deck containers: if no explicit position, inherit parent context
     const pos = this._getPosition(el, parentCtx);
-    const ctx = { x: pos.x, y: pos.y };
+    const ctx = { x: pos.x || parentCtx.x, y: pos.y || parentCtx.y };
 
     const children = [];
     for (const child of el.children) {
