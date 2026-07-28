@@ -73,7 +73,15 @@ class VdjParser {
       }
     }
 
-    return { meta, elements };
+        // Post-cleanup: remove elements with unresolved [PLACEHOLDER] patterns
+    let filtered = [];
+    for (const e of elements) {
+      const a = e.action || "";
+      if (!a.includes("[ACTION") && !a.includes("[TEXTACTION")) {
+        filtered.push(e);
+      }
+    }
+    return { meta, elements: filtered };
   }
 
   /**
@@ -212,8 +220,8 @@ class VdjParser {
     }
 
     // Evaluate left-to-right math
-    // Pattern: number operator number operator number ...
-    const tokens = expr.match(/(-?\d+(?:\.\d+)?|[+\-*/])/g);
+    // Tokenize: digits only (no sign prefix), then operators
+    const tokens = expr.match(/(\d+(?:\.\d+)?|[+\-*/])/g);
     if (!tokens || tokens.length === 0) return 0;
 
     let result = parseFloat(tokens[0]);
@@ -285,7 +293,7 @@ class VdjParser {
     const children = el.getElementsByTagName(tagName);
     // Only direct children with correct parent
     for (const c of children) {
-      if (c.parentElement === el) return c;
+      if (((c.parentElement || c.parentNode) || c.parentNode) === el) return c;
     }
     return null;
   }
