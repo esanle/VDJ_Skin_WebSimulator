@@ -511,11 +511,17 @@ class VdjParser {
           child.tagName === 'off' || child.tagName === 'on' ||
           child.tagName === 'clipmask') continue;
       const rendered = this._renderElement(child, ctx);
-      if (Array.isArray(rendered)) {
-        children.push(...rendered);
-      } else if (rendered) {
-        children.push(rendered);
+      const toAdd = Array.isArray(rendered) ? rendered : (rendered ? [rendered] : []);
+      // Tag elements with panel group info for tab switching
+      const panelName = el.getAttribute('name') || '';
+      const panelGroup = el.getAttribute('group') || '';
+      if ((panelName || panelGroup) && toAdd.length > 0) {
+        for (const e of toAdd) {
+          if (panelName) e.panelName = panelName;
+          if (panelGroup) e.panelGroup = panelGroup;
+        }
       }
+      children.push(...toAdd);
     }
     return children;
   }

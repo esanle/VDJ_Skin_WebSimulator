@@ -30,16 +30,77 @@ class VdjRenderer {
       overflow: hidden;
     `;
 
+    // Build panel group info: track which panel names in each group are active
+    // For groups, only the first panel (visible="yes") should be initially visible
+    const panelGroups = {};
+    for (const el of skin.elements) {
+      if (el.panelGroup && el.panelGroup) {
+        if (!panelGroups[el.panelGroup]) panelGroups[el.panelGroup] = new Set();
+        panelGroups[el.panelGroup].add(el.panelName);
+      }
+    }
+    // Default: first panel in each group is active (visible="yes")
+    const activePanels = {};
+    for (const group of Object.keys(panelGroups)) {
+      const names = Array.from(panelGroups[group]);
+      activePanels[group] = names[0]; // first panel = default active
+    }
+    this._activePanels = activePanels;
+    this._panelElements = {}; // group -> { panelName -> [domEls] }
+
     // Render all elements
     for (const el of skin.elements) {
       const domEl = this._renderElement(el);
       if (domEl) {
+        // Handle panel group visibility
+        if (el.panelGroup && el.panelName) {
+          const isActive = activePanels[el.panelGroup] === el.panelName;
+          if (!isActive) domEl.style.display = 'none';
+          domEl.setAttribute('data-panel-group', el.panelGroup);
+          domEl.setAttribute('data-panel-name', el.panelName);
+          // Track for tab switching
+          if (!this._panelElements[el.panelGroup]) this._panelElements[el.panelGroup] = {};
+          if (!this._panelElements[el.panelGroup][el.panelName]) this._panelElements[el.panelGroup][el.panelName] = [];
+          this._panelElements[el.panelGroup][el.panelName].push(domEl);
+        }
         wrapper.appendChild(domEl);
       }
     }
 
+    // Wire up panel tab switching after render
+    this._setupPanelTabs(wrapper);
+
     this.container.appendChild(wrapper);
     return wrapper;
+  }
+
+  _setupPanelTabs(wrapper) {
+    const self = this;
+    const buttons = wrapper.querySelectorAll('.vdj-button');
+    for (const btn of buttons) {
+      const action = btn.getAttribute('data-action') || '';
+      const match = action.match(/^skin_panel\s+'([^']+)'\s+on$/);
+      if (match) {
+        const targetPanel = match[1];
+        btn.style.cursor = 'pointer';
+        btn.addEventListener('click', () => {
+          // Find which group this panel belongs to
+          for (const group of Object.keys(self._panelElements || {})) {
+            if (self._panelElements[group][targetPanel]) {
+              // Hide all panels in this group
+              for (const panel of Object.keys(self._panelElements[group])) {
+                const isActive = panel === targetPanel;
+                for (const el of self._panelElements[group][panel]) {
+                  el.style.display = isActive ? '' : 'none';
+                }
+              }
+              self._activePanels[group] = targetPanel;
+              break;
+            }
+          }
+        });
+      }
+    }
   }
 
   /**
