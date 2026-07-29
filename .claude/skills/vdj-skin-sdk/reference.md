@@ -112,3 +112,49 @@ automix, karaoke, quick_filter, browser_zoom, grid_view, goto_last_folder,
 add_favoritefolder, add_virtualfolder, add_filterfolder, sampler_bank, sampler_mode,
 sideview_triggerpad, effect_dock_gui, effect_show_gui, view_options, show_splitpanel,
 sideview, font_size, sampler_drop, sampler_loop, sampler_mic, browser_options
+
+## VDJScript Syntax
+
+### Basic Command
+```
+[deck xxx] verb [param1] [param2] [...]
+```
+- `deck xxx`: Optional deck prefix (1/2/3/4, left/right, leftvideo/rightvideo, all, default, active)
+- `while_pressed`: Add at end for temporary actions
+
+### Chaining & Conditions
+| Operator | Meaning | Example |
+|----------|---------|---------|
+| `&` | Sequential chain | `play & loop` |
+| `? :` | Conditional | `play ? pause : play` |
+| `&&` | Logical AND (queries) | `play && loop` → true only if both true |
+
+### Parameter Types
+| Type | Syntax | Example |
+|------|--------|---------|
+| text | `'quoted'` or `"quoted"` | `load 'myfile.mp3'` |
+| boolean | `on`, `off`, `toggle` | `smart_play off` |
+| time | `ms` | `nudge +100ms` |
+| beat | `bt` | `wait 8bt` |
+| integer | number | `effect_select +1` |
+| decimal | `0.0` – `1.0` | `crossfader 0.5` |
+| percentage | `%` | `crossfader 50%` |
+
+### Variables
+| Prefix | Scope | Persistence |
+|--------|-------|-------------|
+| `$name` | Global | Session |
+| `#name` or `name` | Local to deck | Session |
+| `%name` | Local to logical deck | Session |
+| `@$name` | Global | Permanent |
+| `@name` or `@%name` | Local to deck | Permanent |
+
+### Queries (return values)
+- Verbs starting with `get_` return values (strings/numbers)
+- Most verbs can act as queries: `play` → true/false, `crossfader` → 0.0-1.0
+- `crossfader 42%` → true if crossfader is at exactly 42%
+
+### Slider Implicit Parameters
+- Sliders add their value as decimal param (e.g., `crossfader` → `crossfader 0.42`)
+- Jogwheels add relative decimal (e.g., `crossfader +0.42`)
+- Encoders add relative integer, auto-divided by 32
