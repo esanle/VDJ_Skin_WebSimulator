@@ -147,49 +147,6 @@ class VdjRenderer {
       this._applyStateStyle(div, upState, el.width, el.height);
     }
 
-    // Hover effect
-    const overState = el.states.over || upState;
-    div.addEventListener('mouseenter', () => {
-      if (overState && overState.shape && overState.color) {
-        if (overState.shape === 'square') this._applySquareStyle(div, overState);
-        else if (overState.shape === 'circle') {
-          div.style.backgroundColor = overState.color;
-        }
-      }
-    });
-    div.addEventListener('mouseleave', () => {
-      if (upState && upState.shape && upState.color) {
-        if (upState.shape === 'square') this._applySquareStyle(div, upState);
-        else if (upState.shape === 'circle') {
-          div.style.backgroundColor = upState.color;
-        }
-      }
-    });
-
-    // Click effect
-    const downState = el.states.down || el.states.on;
-    div.addEventListener('mousedown', () => {
-      if (downState && downState.shape && downState.color) {
-        if (downState.shape === 'square') this._applySquareStyle(div, downState);
-        else if (downState.shape === 'circle') {
-          div.style.backgroundColor = downState.color;
-        }
-      }
-    });
-    div.addEventListener('mouseup', () => {
-      if (overState && overState.shape && overState.color) {
-        if (overState.shape === 'square') this._applySquareStyle(div, overState);
-        else if (overState.shape === 'circle') {
-          div.style.backgroundColor = overState.color;
-        }
-      } else if (upState && upState.shape && upState.color) {
-        if (upState.shape === 'square') this._applySquareStyle(div, upState);
-        else if (upState.shape === 'circle') {
-          div.style.backgroundColor = upState.color;
-        }
-      }
-    });
-
     // Text overlay
     if (el.text) {
       const textSpan = this._createTextElement(el.text, el.width, el.height);
