@@ -43,10 +43,6 @@ body {
 
 .error { color: #ff4040; padding: 40px; font-size: 16px; text-align: center; }
 
-.vdj-button:hover { outline: 1px solid rgba(255,0,69,0.3); z-index: 10; }
-.vdj-textzone:hover { outline: 1px solid rgba(0,200,255,0.3); z-index: 10; }
-.vdj-visual:hover, .vdj-slider:hover, .vdj-scratch:hover { outline: 1px solid rgba(255,255,255,0.15); z-index: 5; }
-
 .skin-wrapper::-webkit-scrollbar { width: 8px; height: 8px; }
 .skin-wrapper::-webkit-scrollbar-track { background: #111; }
 .skin-wrapper::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
