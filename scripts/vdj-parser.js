@@ -419,35 +419,42 @@ class VdjParser {
       case 'deck':
         return this._renderContainer(el, parentCtx);
       case 'button':
-        return this._renderButton(el, parentCtx);
+        return this._tagPanel(this._renderButton(el, parentCtx), parentCtx);
       case 'textzone':
-        return this._renderTextzone(el, parentCtx);
+        return this._tagPanel(this._renderTextzone(el, parentCtx), parentCtx);
       case 'visual':
-        return this._renderVisual(el, parentCtx);
+        return this._tagPanel(this._renderVisual(el, parentCtx), parentCtx);
       case 'slider':
-        return this._renderSlider(el, parentCtx);
+        return this._tagPanel(this._renderSlider(el, parentCtx), parentCtx);
       case 'square':
       case 'circle':
       case 'line':
-        return this._renderShape(el, parentCtx, tag);
+        return this._tagPanel(this._renderShape(el, parentCtx, tag), parentCtx);
       case 'video':
         return this._renderVideo(el, parentCtx);
       case 'scratch':
-        return this._renderScratch(el, parentCtx);
+        return this._tagPanel(this._renderScratch(el, parentCtx), parentCtx);
       case 'songpos':
-        return this._renderSongpos(el, parentCtx);
+        return this._tagPanel(this._renderSongpos(el, parentCtx), parentCtx);
       case 'browser':
-        return this._renderBrowser(el, parentCtx);
+        return this._tagPanel(this._renderBrowser(el, parentCtx), parentCtx);
       case 'cover':
-        return this._renderCover(el, parentCtx);
+        return this._tagPanel(this._renderCover(el, parentCtx), parentCtx);
       case 'logo':
         return this._renderLogo(el, parentCtx);
       case 'grabzone':
       case 'resizezone':
-        return null; // Not visually rendered
+        return null;
       default:
         return null;
     }
+  }
+
+  // Tag an element with panel name/group from parent context
+  _tagPanel(el, parentCtx) {
+    if (el && parentCtx.panelName) el.panelName = parentCtx.panelName;
+    if (el && parentCtx.panelGroup) el.panelGroup = parentCtx.panelGroup;
+    return el;
   }
 
   /**
@@ -455,7 +462,7 @@ class VdjParser {
    */
   _renderGroup(el, parentCtx) {
     const pos = this._getPosition(el, parentCtx);
-    const ctx = { x: pos.x, y: pos.y };
+    const ctx = { x: pos.x, y: pos.y, panelName: parentCtx.panelName, panelGroup: parentCtx.panelGroup };
 
     const children = [];
     for (const child of el.children) {
@@ -471,7 +478,9 @@ class VdjParser {
 
   _renderPanel(el, parentCtx) {
     const pos = this._getPosition(el, parentCtx);
-    const ctx = { x: pos.x, y: pos.y };
+    const panelName = el.getAttribute('name') || parentCtx.panelName || '';
+    const panelGroup = el.getAttribute('group') || parentCtx.panelGroup || '';
+    const ctx = { x: pos.x, y: pos.y, panelName, panelGroup };
 
     const children = [];
 
@@ -493,14 +502,17 @@ class VdjParser {
         };
         // If it has color or shape, render as a background visual
         if (bgState.color || bgState.shape) {
-          children.push({
+          const bgVis = {
             type: 'visual',
             x: pos.x, y: pos.y,
             width: pos.width || 1920,
             height: pos.height || 1080,
             source: '', visualType: '',
             states: { off: bgState },
-          });
+          };
+          if (panelName) bgVis.panelName = panelName;
+          if (panelGroup) bgVis.panelGroup = panelGroup;
+          children.push(bgVis);
         }
       }
     }
@@ -511,17 +523,11 @@ class VdjParser {
           child.tagName === 'off' || child.tagName === 'on' ||
           child.tagName === 'clipmask') continue;
       const rendered = this._renderElement(child, ctx);
-      const toAdd = Array.isArray(rendered) ? rendered : (rendered ? [rendered] : []);
-      // Tag elements with panel group info for tab switching
-      const panelName = el.getAttribute('name') || '';
-      const panelGroup = el.getAttribute('group') || '';
-      if ((panelName || panelGroup) && toAdd.length > 0) {
-        for (const e of toAdd) {
-          if (panelName) e.panelName = panelName;
-          if (panelGroup) e.panelGroup = panelGroup;
-        }
+      if (Array.isArray(rendered)) {
+        children.push(...rendered);
+      } else if (rendered) {
+        children.push(rendered);
       }
-      children.push(...toAdd);
     }
     return children;
   }
@@ -529,7 +535,7 @@ class VdjParser {
   _renderContainer(el, parentCtx) {
     // Deck containers: if no explicit position, inherit parent context
     const pos = this._getPosition(el, parentCtx);
-    const ctx = { x: pos.x || parentCtx.x, y: pos.y || parentCtx.y };
+    const ctx = { x: pos.x || parentCtx.x, y: pos.y || parentCtx.y, panelName: parentCtx.panelName, panelGroup: parentCtx.panelGroup };
 
     const children = [];
     for (const child of el.children) {
