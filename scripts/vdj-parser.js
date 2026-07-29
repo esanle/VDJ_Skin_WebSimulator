@@ -462,7 +462,12 @@ class VdjParser {
    */
   _renderGroup(el, parentCtx) {
     const pos = this._getPosition(el, parentCtx);
-    const ctx = { x: pos.x, y: pos.y, panelName: parentCtx.panelName, panelGroup: parentCtx.panelGroup };
+    const ctx = {
+      x: pos.x || parentCtx.x,
+      y: pos.y || parentCtx.y,
+      panelName: parentCtx.panelName,
+      panelGroup: parentCtx.panelGroup
+    };
 
     const children = [];
     for (const child of el.children) {
@@ -480,7 +485,12 @@ class VdjParser {
     const pos = this._getPosition(el, parentCtx);
     const panelName = el.getAttribute('name') || parentCtx.panelName || '';
     const panelGroup = el.getAttribute('group') || parentCtx.panelGroup || '';
-    const ctx = { x: pos.x, y: pos.y, panelName, panelGroup };
+    // For panels without explicit position, inherit parent context
+    const ctx = {
+      x: pos.x || parentCtx.x,
+      y: pos.y || parentCtx.y,
+      panelName, panelGroup
+    };
 
     const children = [];
 
@@ -535,7 +545,12 @@ class VdjParser {
   _renderContainer(el, parentCtx) {
     // Deck containers: if no explicit position, inherit parent context
     const pos = this._getPosition(el, parentCtx);
-    const ctx = { x: pos.x || parentCtx.x, y: pos.y || parentCtx.y, panelName: parentCtx.panelName, panelGroup: parentCtx.panelGroup };
+    const ctx = {
+      x: pos.x || parentCtx.x,
+      y: pos.y || parentCtx.y,
+      panelName: parentCtx.panelName,
+      panelGroup: parentCtx.panelGroup
+    };
 
     const children = [];
     for (const child of el.children) {
