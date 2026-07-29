@@ -127,7 +127,7 @@ class VdjRenderer {
       case 'square': return this._renderSquare(el);
       case 'circle': return this._renderCircle(el);
       case 'line': return this._renderLine(el);
-      case 'video': return this._renderVideo(el);
+      case 'video': return null; // disabled
       case 'scratch': return this._renderScratch(el);
       case 'songpos': return this._renderSongpos(el);
       case 'browser': return this._renderBrowser(el);
