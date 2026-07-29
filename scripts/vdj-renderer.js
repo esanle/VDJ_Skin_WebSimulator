@@ -314,19 +314,22 @@ class VdjRenderer {
       this._applyStateStyle(div, upState, el.width, el.height);
     }
 
-    // Render the fader knob
-    if (el.fader) {
+    // Render the fader knob (only if it has a visible color)
+    if (el.fader && el.fader.color) {
       const fader = document.createElement('div');
       fader.className = 'vdj-fader';
+      const isVert = el.orientation === 'vertical';
+      const faderW = el.fader.width || 12;
+      const faderH = el.fader.height || 12;
       fader.style.cssText = `
         position: absolute;
-        left: ${el.orientation === 'vertical' ? '0' : '50%'};
-        top: ${el.orientation === 'vertical' ? '50%' : '0'};
-        width: ${el.orientation === 'vertical' ? el.width : el.fader.width || 12}px;
-        height: ${el.orientation === 'vertical' ? el.fader.height || 12 : el.height}px;
-        transform: translate(-50%, -50%);
+        left: ${isVert ? '50%' : '0'};
+        top: ${isVert ? '0' : '50%'};
+        width: ${isVert ? (faderW || el.width) : faderW}px;
+        height: ${isVert ? faderH : (faderH || el.height)}px;
+        transform: translate(${isVert ? '-50%, 0' : '0, -50%'});
         border-radius: ${el.fader.radius || 2}px;
-        background-color: ${el.fader.color || '#808080'};
+        background-color: ${el.fader.color};
       `;
       div.appendChild(fader);
     }
