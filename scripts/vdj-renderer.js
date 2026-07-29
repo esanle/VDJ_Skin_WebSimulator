@@ -105,12 +105,12 @@ class VdjRenderer {
     if (state.radius && state.radius > 0) {
       div.style.borderRadius = `${state.radius}px`;
     }
-    if (state.borderColor && state.border) {
+    if (state.borderColor && state.border && state.border > 0) {
       div.style.border = `${state.border}px solid ${state.borderColor}`;
-    } else if (state.border && !state.borderColor) {
-      div.style.border = `${state.border}px solid transparent`;
+    } else if (state.border && state.border > 0 && !state.borderColor) {
+      // Don't clear existing border just because over state doesn't specify one
     }
-    if (state.highlight && state.highlightSize) {
+    if (state.highlight && state.highlightSize && state.highlightSize > 0) {
       div.style.boxShadow = `inset 0 ${state.highlightSize}px 0 ${state.highlight}`;
     }
   }
@@ -150,18 +150,18 @@ class VdjRenderer {
     // Hover effect
     const overState = el.states.over || upState;
     div.addEventListener('mouseenter', () => {
-      if (overState && overState.shape) {
+      if (overState && overState.shape && overState.color) {
         if (overState.shape === 'square') this._applySquareStyle(div, overState);
         else if (overState.shape === 'circle') {
-          div.style.backgroundColor = overState.color || '';
+          div.style.backgroundColor = overState.color;
         }
       }
     });
     div.addEventListener('mouseleave', () => {
-      if (upState && upState.shape) {
+      if (upState && upState.shape && upState.color) {
         if (upState.shape === 'square') this._applySquareStyle(div, upState);
         else if (upState.shape === 'circle') {
-          div.style.backgroundColor = upState.color || '';
+          div.style.backgroundColor = upState.color;
         }
       }
     });
@@ -169,23 +169,23 @@ class VdjRenderer {
     // Click effect
     const downState = el.states.down || el.states.on;
     div.addEventListener('mousedown', () => {
-      if (downState && downState.shape) {
+      if (downState && downState.shape && downState.color) {
         if (downState.shape === 'square') this._applySquareStyle(div, downState);
         else if (downState.shape === 'circle') {
-          div.style.backgroundColor = downState.color || '';
+          div.style.backgroundColor = downState.color;
         }
       }
     });
     div.addEventListener('mouseup', () => {
-      if (overState && overState.shape) {
+      if (overState && overState.shape && overState.color) {
         if (overState.shape === 'square') this._applySquareStyle(div, overState);
         else if (overState.shape === 'circle') {
-          div.style.backgroundColor = overState.color || '';
+          div.style.backgroundColor = overState.color;
         }
-      } else if (upState && upState.shape) {
+      } else if (upState && upState.shape && upState.color) {
         if (upState.shape === 'square') this._applySquareStyle(div, upState);
         else if (upState.shape === 'circle') {
-          div.style.backgroundColor = upState.color || '';
+          div.style.backgroundColor = upState.color;
         }
       }
     });
